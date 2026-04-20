@@ -72,7 +72,25 @@ GATES = [
     (qiskit.circuit.library.CU3Gate, 3),
 ]
 
-PARAM_VAL = [i / 8 * TAU for i in range(8)]
+
+def make_params(n):
+    if n == 0:
+        yield []
+        return
+
+    for i in range(10):
+        yield [(random.random() * 2 - 1) * TAU for i in range(n)]
+
+    seen = set()
+    n_tests = 3**n
+    while len(seen) < n_tests:
+        while True:
+            ps = tuple(random.choices(range(-7, 8), k=n))
+            if ps not in seen:
+                break
+        seen.add(ps)
+        yield [v * TAU / 8 for v in ps]
+
 
 @pytest.mark.parametrize("gate_type, n_params", GATES)
 def test_gate(gate_type, n_params):
@@ -101,25 +119,6 @@ def test_gate(gate_type, n_params):
 
         if numpy.abs(m_got - m_want).max() > 0.001:
             raise RuntimeError(f'Gate error for {gate_type}{param_tup}:\ngot:\n{m_got}\nwant:\n{m_want}')
-
-
-def make_params(n):
-    if n == 0:
-        yield []
-        return
-
-    for i in range(10):
-        yield [(random.random() * 2 - 1) * TAU for i in range(n)]
-
-    seen = set()
-    n_tests = 3**n
-    while len(seen) < n_tests:
-        while True:
-            ps = tuple(random.choices(range(-7, 8), k=n))
-            if ps not in seen:
-                break
-        seen.add(ps)
-        yield [v * TAU / 8 for v in ps]
 
 
 @pytest.mark.parametrize("gate_type, n_params", GATES)
