@@ -113,7 +113,11 @@ class _Context:
         subctx = _Context(self.rng, self.sv, sub_force_clbits, subclbits, self.respect_barriers)
         qubit_map = {inner_qubit: outer_qubit for (outer_qubit, inner_qubit) in zip(qubits, qc.qubits, strict=True)}
 
-        disp = _CONTROLLED if ctl else _UNCONTROLLED
+        if ctl:
+            sim.mcphase(ctl, qc.global_phase)
+            disp = _CONTROLLED
+        else:
+            disp = _UNCONTROLLED
         for inst in qc.data:
             op = inst.operation
             # Use `_condition` to silence this warning:
